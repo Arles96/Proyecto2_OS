@@ -17,14 +17,6 @@ using namespace std;
 #define STRING_SIZE 20
 #define TABLE_SIZE 50
 
-struct table {
-  int orden;
-  int products;
-  double total;
-  char client[STRING_SIZE];
-  char date [STRING_SIZE] ;
-};
-
 int getIntRandom (int range) {
   srand(time(NULL));
   return rand() % range;
@@ -37,7 +29,11 @@ double getDoubleRandom (int range, double min, double max) {
 }
 
 struct sharedMemory {
-  table array [TABLE_SIZE];
+  int orden[TABLE_SIZE];
+  int products[TABLE_SIZE];
+  double total[TABLE_SIZE];
+  char client[TABLE_SIZE][STRING_SIZE];
+  char date [TABLE_SIZE][STRING_SIZE] ;
   int counter = 0;
   sem_t mutex;
 };
@@ -46,10 +42,11 @@ sharedMemory *memory;
 char clients [5] [STRING_SIZE] = { "Dario", "Arles", "Cristhian", "Harold", "Ana" };
 
 int main () {
-  key_t key = 1000;
-  sem_init(&memory->mutex, 1, 1);
+  key_t key = 5656;
+  //sem_init(&memory->mutex, 1, 1);
   int shmid;
-  if ((shmid = shmget(key, sizeof(struct sharedMemory) + STRING_SIZE, 0644 | IPC_CREAT)) == -1) {
+  cout << "123" << endl;
+  if ((shmid = shmget(key, sizeof(struct sharedMemory), 0644 | IPC_CREAT)) == -1) {
     perror("shmget");
     exit(1);
   }
@@ -58,27 +55,32 @@ int main () {
     perror("shmat");
     exit(1);
   }
+  sem_init(&memory->mutex, 1, 1);
   while (true) {
     sem_wait(&memory->mutex);
     int option = getIntRandom(2);
     if (option == 0) { // Agregando ordenes
-      table *newTable;
-      strcpy(newTable->client, clients[getIntRandom(5)]);
-      newTable->orden = getIntRandom(2019);
+      cout << "Hola Agregando" << endl;
+      strcpy(memory->client[memory->counter], clients[getIntRandom(5)]);
+      cout << "copy" << endl;
+      memory->orden[memory->counter] = getIntRandom(2019);
       time_t now = time(0);
-      strcpy(newTable->date, ctime(&now));
-      newTable->products = getIntRandom(20);
-      newTable->total = getDoubleRandom(500, 100, 499);
-      memory->array[memory->counter] = *newTable;
+      strcpy(memory->date[memory->counter], ctime(&now));
+      memory->products[memory->counter] = getIntRandom(20);
+      memory->total[memory->counter] = getDoubleRandom(500, 100, 499);
       memory->counter++;
       cout << "Un escritor agrego una orden" << endl;
+      sleep(2);
     } else { // eliminando ordenes
       // memory->array[memory->counter] = NULL;
-      memory->counter--;
-      cout << "Un escritor ha eliminado una orden" << endl;
+      if (memory->counter > 0) {
+        memory->counter--;
+        cout << "Un escritor ha eliminado una orden" << endl;
+        sleep(2);
+      }
     }
     sem_post(&memory->mutex);
-    sleep(2);
+
   }
   return 0;
 }
