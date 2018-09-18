@@ -46,9 +46,10 @@ sharedMemory *memory;
 char clients [5] [STRING_SIZE] = { "Dario", "Arles", "Cristhian", "Harold", "Ana" };
 
 int main () {
-  key_t key = 5646;
+  key_t key = 1000;
+  sem_init(&memory->mutex, 1, 1);
   int shmid;
-  if ((shmid = shmget(key, sizeof(struct sharedMemory), 0644 | IPC_CREAT)) == -1) {
+  if ((shmid = shmget(key, sizeof(struct sharedMemory) + STRING_SIZE, 0644 | IPC_CREAT)) == -1) {
     perror("shmget");
     exit(1);
   }
@@ -58,6 +59,7 @@ int main () {
     exit(1);
   }
   while (true) {
+    sem_wait(&memory->mutex);
     int option = getIntRandom(2);
     if (option == 0) { // Agregando ordenes
       table *newTable;
@@ -71,10 +73,11 @@ int main () {
       memory->counter++;
       cout << "Un escritor agrego una orden" << endl;
     } else { // eliminando ordenes
-      memory->array[memory->counter] = NULL;
+      // memory->array[memory->counter] = NULL;
       memory->counter--;
       cout << "Un escritor ha eliminado una orden" << endl;
     }
+    sem_post(&memory->mutex);
     sleep(2);
   }
   return 0;
