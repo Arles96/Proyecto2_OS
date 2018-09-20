@@ -33,7 +33,7 @@ struct sharedMemory {
   int products[TABLE_SIZE];
   double total[TABLE_SIZE];
   char client[TABLE_SIZE][STRING_SIZE];
-  int date [3][STRING_SIZE] ;
+  int date [3][TABLE_SIZE] ;
   int counter = 0;
   sem_t mutex;
 };
@@ -42,7 +42,7 @@ sharedMemory *memory;
 char clients [5] [STRING_SIZE] = { "Dario", "Arles", "Cristhian", "Harold", "Ana" };
 
 int main () {
-  key_t key = 1127;
+  key_t key = 5658;
   int shmid;
   if ((shmid = shmget(key, sizeof(struct sharedMemory), 0644)) == -1) {
     perror("shmget");
@@ -60,11 +60,11 @@ int main () {
       int option = getIntRandom(4, 0);
       if (option == 0) { //Imprimir las ordernes por año
         cout << "Imprimir las ordenes por año" << endl;
-        int year = getIntRandom(2019, 2000);
+        int year = getIntRandom(2019, 2015);
         cout << "Anio: " << year << endl;
         int counter = 0;
         for (int i = 0; i <= memory->counter; i++) {
-          if (memory->date[3][i] == year) {
+          if (memory->date[2][i] == year) {
             cout << "Orden: " << memory->orden[i] << endl;
             cout << "Cliente: " << memory->client[i] << endl;
             cout << "Cantidad de productos: " << memory->products[i] << endl;
