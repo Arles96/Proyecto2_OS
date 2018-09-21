@@ -55,10 +55,10 @@ int main () {
   }
   sem_init(&memory->mutex, 1, 1);
   while (true) {
-    sem_wait(&memory->mutex);
     int option = getIntRandom(2, 0);
     if (option == 0) { // Agregando ordenes
       if (memory->counter < TABLE_SIZE - 1) {
+        sem_wait(&memory->mutex);
         cout << "Hola Agregando Orden" << endl;
         // Agregando cliente
         strcpy(memory->client[memory->counter], clients[getIntRandom(5, 0)]);
@@ -74,16 +74,18 @@ int main () {
         memory->date[2][memory->counter] = getIntRandom(2019, 2015);
         memory->counter++;
         cout << "Un escritor agrego una orden" << endl << endl;
+        sem_post(&memory->mutex);
       } else { // memoria esta llena
         cout << "Memooria llena." << endl << endl;
       }
     } else { // eliminando ordenes
       if (memory->counter > 0) {
+        sem_wait(&memory->mutex);
         memory->counter--;
         cout << "Un escritor ha eliminado una orden" << endl << endl;
+        sem_post(&memory->mutex);
       }
     }
-    sem_post(&memory->mutex);
     sleep(getIntRandom(5,1));
   }
   return 0;

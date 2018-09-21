@@ -112,8 +112,8 @@ int main () {
         }
       }
       sem_post(&memory->mutex);
-      sleep(getIntRandom(5,1));
     }
+    sleep(getIntRandom(5,1));
   }
   return 0;
 }
